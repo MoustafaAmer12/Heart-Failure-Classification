@@ -49,8 +49,16 @@ if __name__ == "__main__":
 
     knn = KNNClassifier(k=6)
     knn.fit(X_train, y_train)
-    accuracy, f1 = knn.evaluate(X_test, y_test)
+    # accuracy, f1 = knn.evaluate(X_test, y_test)
+    # knn.plot_confusion_matrix(X_test, y_test)
+    
+
+    test_accuracy, test_f1 = knn.evaluate(X_test, y_test)
+    validation_accuracy, validation_f1 = knn.evaluate(X_validation, y_validation)
+
     knn.plot_confusion_matrix(X_test, y_test)
+    knn.plot_confusion_matrix(X_validation, y_validation)
     
     # Summary Output
-    print(f"Summary:\nAccuracy: {accuracy:.2f}\nF1-Score: {f1:.2f}")
+    print(f"Test Summary:\nAccuracy: {test_accuracy:.2f}\nF1-Score: {test_f1:.2f}")
+    print(f"Validation Summary:\nAccuracy: {validation_accuracy:.2f}\nF1-Score: {validation_f1:.2f}")
