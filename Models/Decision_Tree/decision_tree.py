@@ -1,6 +1,7 @@
 from Models.Decision_Tree.node import Node
 import numpy as np
-from preprocess_data import PrepareData
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
+from Data_Preprocessing.preprocess_data import PrepareData
 
 DATA_PATH = "Data/heart.csv"
 class DecisionTreeClassifier:
@@ -284,11 +285,21 @@ class DecisionTreeClassifier:
         _, label_counts = np.unique(y, return_counts=True)
         entropy = sum([label_count/total_instances * np.log2(total_instances / label_count) for label_count in label_counts])
         return entropy
+    
+    def evaluate(y, y_pred):
+        accuracy = accuracy_score(y_val, pred)
+        f1 = f1_score(y_val, pred, average='weighted')
+        conf_matrix = confusion_matrix(y_val, pred)
+        # Print results
+        print(f"Accuracy: {accuracy:.4f}")
+        print(f"F1 Score: {f1:.4f}")
+        print("Confusion Matrix:")
+        print(conf_matrix)
 
 
 
 if __name__ == "__main__":
-    prepared_data = PrepareData(dataset_path=DATA_PATH,random_seed=42,
+    prepared_data = PrepareData(dataset_path="heart.csv",random_seed=42,
                                 training_percentage=70,validation_percentage=10,testing_percentage=20)
     
     X_train, X_val, X_test, y_train, y_val, y_test = prepared_data.prepare_data()
@@ -301,3 +312,6 @@ if __name__ == "__main__":
         print(sample.shape)
     pred = model.predict(X_val)
     print(pred)
+
+    model.evaluate(X_val)
+
