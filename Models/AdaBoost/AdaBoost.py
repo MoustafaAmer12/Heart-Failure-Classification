@@ -1,12 +1,11 @@
 
 import numpy as np
-from sklearn.tree import DecisionTreeClassifier
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix, ConfusionMatrixDisplay
 from Data_Preprocessing.preprocess_data import PrepareData
-
+from Models.AdaBoost.DecisionStump import DecisionStump
 
 
 class AdaBoost:
@@ -21,10 +20,10 @@ class AdaBoost:
         weights = np.ones(n_samples) / n_samples
 
         for _ in range(self.n_estimators):
-            model = DecisionTreeClassifier(max_depth=1)
-            model.fit(X, y, sample_weight=weights)  # Pass weights to fit
+            stump = DecisionStump()
+            stump.train(X, y, weights)
+            predictions = stump.predict(X)
 
-            predictions = model.predict(X)
 
             err = np.sum(weights * (predictions != y)) / np.sum(weights)
 
@@ -32,18 +31,19 @@ class AdaBoost:
                 break 
 
             alpha = 0.5 * np.log((1 - err) / err)
+            stump.alpha = alpha
 
             weights *= np.exp(-alpha * y * predictions)
             weights /= np.sum(weights)  # Normalize weights
 
-            self.models.append(model)
+            self.models.append(stump)
             self.alphas.append(alpha)
 
     def predict(self, X):
         final_pred = np.zeros(X.shape[0])
 
-        for alpha, model in zip(self.alphas, self.models):
-            final_pred += alpha * model.predict(X)
+        for stump in self.models:
+            final_pred += stump.alpha * stump.predict(X)
 
         return np.where(final_pred >= 0, 1, -1)  # Ensure valid class labels
     
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     y_validation = 2 * (y_validation - 0.5)
 
     # Train AdaBoost model
-    model = AdaBoost(n_estimators=50)
+    model = AdaBoost(n_estimators=15)
     model.fit(X_train, y_train)
 
     test_accuracy, test_f1 = model.evaluate(X_test, y_test)
