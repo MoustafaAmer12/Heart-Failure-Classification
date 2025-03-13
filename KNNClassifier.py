@@ -1,9 +1,10 @@
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class KNNClassifier:
@@ -23,8 +24,18 @@ class KNNClassifier:
     def evaluate(self, X, y):
         y_pred = self.predict(X)
         accuracy = accuracy_score(y, y_pred)
+        f1 = f1_score(y, y_pred, average='weighted')
         print(f"{self.k}-NN Model Accuracy: {accuracy:.2f}")
-        return accuracy
+        print(f"{self.k}-NN Model F1-Score: {f1:.2f}")
+        return accuracy, f1
+    
+    def plot_confusion_matrix(self, X, y):
+        y_pred = self.predict(X)
+        cm = confusion_matrix(y, y_pred)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+        disp.plot(cmap=plt.cm.Blues)
+        plt.title(f"Confusion Matrix for {self.k}-NN")
+        plt.show()
     
 
 if __name__ == "__main__":
@@ -35,4 +46,8 @@ if __name__ == "__main__":
 
     knn = KNNClassifier(k=10)
     knn.fit(X_train, y_train)
-    knn.evaluate(X_test, y_test)
+    accuracy, f1 = knn.evaluate(X_test, y_test)
+    knn.plot_confusion_matrix(X_test, y_test)
+    
+    # Summary Output
+    print(f"Summary:\nAccuracy: {accuracy:.2f}\nF1-Score: {f1:.2f}")
