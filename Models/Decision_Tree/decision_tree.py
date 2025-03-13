@@ -6,8 +6,8 @@ class DecisionTreeClassifier:
     Decision Tree Classifier Class
     Constructs a generic decision tree for classification
     """
-    def __init__(self, data, max_depth=None, min_samples_split=None):
-        self.root = Node(data)
+    def __init__(self, X, Y, max_depth=None, min_samples_split=None):
+        self.root = Node(data=np.column_stack((X, Y)))
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
     
@@ -297,7 +297,9 @@ if __name__ == "__main__":
         [0 , 1, 0, 0],
         [0 , 1, 0, 0],
     ])
-    model = DecisionTreeClassifier(data)
+    X = data[:, :-1]
+    Y = data[:, -1]
+    model = DecisionTreeClassifier(X, Y)
     model.train()
     pred = model.predict([
         [1 , 1, 1],
