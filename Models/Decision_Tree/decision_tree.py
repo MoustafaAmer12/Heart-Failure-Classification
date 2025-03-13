@@ -5,8 +5,8 @@ class DecisionTreeClassifier:
     Decision Tree Classifier Class
     Constructs a generic decision tree for classification
     """
-    def __init__(self, data, max_depth=None, min_samples_split=None):
-        self.root = Node(data)
+    def __init__(self, X, Y, max_depth=None, min_samples_split=None):
+        self.root = Node(data=np.column_stack((X, Y)))
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
     
@@ -185,10 +185,10 @@ class DecisionTreeClassifier:
 
         # Initialize variables for tracking the best split
         index_feature_split = -1
-        min_entropy = 1 # TODO check for maximum entropy value possible
+        min_entropy = 1
 
         # iterate over all features, ignore (y)
-        for i in range(data.shape[1] - 1):
+        for i in range(node.data.shape[1] - 1):
             split_nodes, threshold, weighted_entropy = self.split_on_feature(node.data, i)
             if weighted_entropy < min_entropy:
                 child_nodes, split_val , min_entropy = split_nodes, threshold, weighted_entropy
@@ -302,7 +302,9 @@ if __name__ == "__main__":
         [0 , 1, 0, 0],
         [0 , 1, 0, 0],
     ])
-    model = DecisionTreeClassifier(data)  
+    X = data[:, :-1]
+    Y = data[:, -1]
+    model = DecisionTreeClassifier(X, Y)
     model.train()
     pred = model.predict([
         [1 , 1, 1],
