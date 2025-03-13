@@ -91,15 +91,22 @@ if __name__ == "__main__":
 
     bagging_clf = Bagging(X_train, y_train, random_seed=42)
 
-    evaluation_results = bagging_clf.evaluate(X_test, y_test)
-
+    test_evaluation_results = bagging_clf.evaluate(X_test, y_test)
+    val_evaluation_results =  bagging_clf.evaluate(X_val, y_val)
     print("===============================")
-    print("Evaluation Results:")
+    print("Test Evaluation Results:")
     print("===============================")
-    print(f"Accuracy: {evaluation_results['accuracy']:.4f}")
-    print(f"F1 Score: {evaluation_results['f1_score']:.4f}")
+    print(f"Accuracy: {test_evaluation_results['accuracy']:.4f}")
+    print(f"F1 Score: {test_evaluation_results['f1_score']:.4f}")
     print("Confusion Matrix:")
-    print(evaluation_results['confusion_matrix'])
+    print(test_evaluation_results['confusion_matrix'])
+    print("===============================")
+    print("Validation Evaluation Results:")
+    print("===============================")
+    print(f"Accuracy: {val_evaluation_results['accuracy']:.4f}")
+    print(f"F1 Score: {val_evaluation_results['f1_score']:.4f}")
+    print("Confusion Matrix:")
+    print(val_evaluation_results['confusion_matrix'])
     
     # Plot confusion matrix
 

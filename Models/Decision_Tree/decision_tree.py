@@ -287,14 +287,15 @@ class DecisionTreeClassifier:
         return entropy
     
     def evaluate(y, y_pred):
-        accuracy = accuracy_score(y_val, pred)
-        f1 = f1_score(y_val, pred, average='weighted')
+        accuracy_val = accuracy_score(y_val, pred)
+        f1_score_val = f1_score(y_val, pred, average='weighted')
         conf_matrix = confusion_matrix(y_val, pred)
-        # Print results
-        print(f"Accuracy: {accuracy:.4f}")
-        print(f"F1 Score: {f1:.4f}")
-        print("Confusion Matrix:")
-        print(conf_matrix)
+        
+        return {
+            'accuracy': accuracy_val,
+            'f1_score': f1_score_val,
+            'confusion_matrix': conf_matrix
+        }
 
 
 
@@ -310,8 +311,27 @@ if __name__ == "__main__":
     print(X_val.shape)
     for idx, sample in X_val.iterrows():
         print(sample.shape)
+
+    
     pred = model.predict(X_val)
     print(pred)
 
-    model.evaluate(X_val)
+    val_evaluation_results = model.evaluate(X_val)
+    test_evaluation_results = model.evaluate(X_test)
 
+    print("===============================")
+    print("Test Evaluation Results:")
+    print("===============================")
+    print(f"Accuracy: {test_evaluation_results['accuracy']:.4f}")
+    print(f"F1 Score: {test_evaluation_results['f1_score']:.4f}")
+    print("Confusion Matrix:")
+    print(test_evaluation_results['confusion_matrix'])
+    print("===============================")
+    print("Validation Evaluation Results:")
+    print("===============================")
+    print(f"Accuracy: {val_evaluation_results['accuracy']:.4f}")
+    print(f"F1 Score: {val_evaluation_results['f1_score']:.4f}")
+    print("Confusion Matrix:")
+    print(val_evaluation_results['confusion_matrix'])
+
+    
