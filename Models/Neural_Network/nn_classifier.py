@@ -1,6 +1,10 @@
 import torch
 import torch.nn as nn  
 import torch.optim as optim  
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 from nn import HeartFailureNN
 from data_loader import get_data_loader
 from preprocess_data import PrepareData
@@ -33,24 +37,33 @@ class NNClassifier:
                 total_loss += loss.item()
             print(f"Epoch [{epoch+1}/{epochs}], Loss: {total_loss / len(train_loader):.4f}")
 
-    def evaluate(self, test_loader):
+    def evaluate(self, data_loader, set_name="Test"):
         self.model.eval()
-        correct = 0
-        total = 0
+        all_preds = []
+        all_labels = []
         
         with torch.no_grad():
-            for batch_X, batch_y in test_loader:
+            for batch_X, batch_y in data_loader:
                 outputs = self.model(batch_X)
-                predicted = (outputs >= 0.5).float()  # Convert probabilities to binary
-                
-                # Ensure the shape matches
-                batch_y = batch_y.view_as(predicted)  # Reshape if needed
-                
-                correct += (predicted == batch_y).sum().item()
-                total += batch_y.numel()  # Use numel() to ensure correct counting
+                predicted = (outputs >= 0.5).float()
+                all_preds.extend(predicted.cpu().numpy())
+                all_labels.extend(batch_y.cpu().numpy())
         
-        accuracy = (correct / total) * 100
-        print(f"Test Accuracy: {accuracy:.2f}%")
+        accuracy = accuracy_score(all_labels, all_preds) * 100
+        f1 = f1_score(all_labels, all_preds)
+        cm = confusion_matrix(all_labels, all_preds)
+        
+        print(f"{set_name} Accuracy: {accuracy:.2f}%")
+        print(f"{set_name} F1 Score: {f1:.4f}")
+        print(f"{set_name} Confusion Matrix:\n{cm}")
+        
+        # Plot Confusion Matrix
+        plt.figure(figsize=(5, 4))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=["Negative", "Positive"], yticklabels=["Negative", "Positive"])
+        plt.xlabel("Predicted")
+        plt.ylabel("Actual")
+        plt.title(f"{set_name} Confusion Matrix")
+        plt.show()
 
 if __name__ == "__main__":
     prepared_data = PrepareData(dataset_path=DATA_PATH, random_seed=RANDOM_SEED,
@@ -65,4 +78,7 @@ if __name__ == "__main__":
 
     model = NNClassifier(HeartFailureNN())
     model.train(train_loader, epochs=EPOCHS)
-    model.evaluate(test_loader)
+    
+    # Evaluate on validation and test sets
+    model.evaluate(val_loader, set_name="Validation")
+    model.evaluate(test_loader, set_name="Test")
