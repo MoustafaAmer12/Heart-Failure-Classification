@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression as SklearnLogisticRegression
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 import matplotlib.pyplot as plt
 from prepare import PrepareData
 
@@ -23,9 +23,11 @@ class LogisticRegression:
         y_pred = self.model.predict(X)
         accuracy = accuracy_score(y, y_pred)
         f1 = f1_score(y, y_pred)
+        cm = confusion_matrix(y, y_pred)
 
         print(f"Accuracy: {accuracy:.4f}")
         print(f"F1 score: {f1:.4f}")
+        print(f"Confustion matrix: {cm}")
 
 
 # Example usage
