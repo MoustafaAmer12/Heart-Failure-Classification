@@ -1,6 +1,11 @@
 
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix, ConfusionMatrixDisplay
+
 
 
 class AdaBoost:
@@ -40,12 +45,28 @@ class AdaBoost:
             final_pred += alpha * model.predict(X)
 
         return np.sign(final_pred)
+    
+
+    def evaluate(self, X, y):
+        y_pred = self.predict(X)
+        accuracy = accuracy_score(y, y_pred)
+        f1 = f1_score(y, y_pred, average='weighted')
+        print(f"AdaBoost Model Accuracy: {accuracy:.2f}")
+        print(f"AdaBoost Model F1-Score: {f1:.2f}")
+        return accuracy, f1
+
+    
+    def plot_confusion_matrix(self, X, y):
+        y_pred = self.predict(X)
+        cm = confusion_matrix(y, y_pred)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+        disp.plot(cmap=plt.cm.Blues)
+        plt.title(f"Confusion Matrix for AdaBoost")
+        plt.show()
+
 
 
 if __name__ == "__main__":
-    from sklearn.datasets import make_classification
-    from sklearn.model_selection import train_test_split
-    from sklearn.metrics import accuracy_score
 
     # Generate synthetic dataset
     X, y = make_classification(n_samples=500, n_features=10, random_state=42)
@@ -56,7 +77,8 @@ if __name__ == "__main__":
     # Train AdaBoost model
     model = AdaBoost(n_estimators=50)
     model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
-
-    # Evaluate accuracy
-    print("Accuracy:", accuracy_score(y_test, y_pred))
+    accuracy, f1 = model.evaluate(X_test, y_test)
+    model.plot_confusion_matrix(X_test, y_test)
+    
+    # Summary Output
+    print(f"Summary:\nAccuracy: {accuracy:.2f}\nF1-Score: {f1:.2f}")
