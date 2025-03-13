@@ -38,6 +38,13 @@ class PrepareData:
         X = df.drop(columns = [target_column])
         Y = df[target_column]
 
+        X['FastingBS'] = X['FastingBS'].astype('category')
+        categorical_features = X.select_dtypes(include=['object', 'category']).columns
+        print("Categorical Features:", categorical_features )
+
+        # One-hot encode the categorical features
+        X = pd.get_dummies(X, columns=categorical_features)
+
         # Split data into 80% for training and validation, and 20% for testing
         X_temp, self.X_test, Y_temp, self.Y_testing = train_test_split(
             X,Y, test_size=test_size, random_state=self.random_seed, stratify=Y
@@ -59,7 +66,7 @@ class PrepareData:
         print(f"Validation set: {len(self.X_validation)} samples ({val_proportion:.1%})")
         print(f"Test set: {len(self.X_test)} samples ({test_proportion:.1%})")
 
-        return self.X_train, self.X_validation, self.X_validation, self.Y_train, self.Y_validation, self.Y_testing
+        return self.X_train, self.X_validation, self.X_test, self.Y_train, self.Y_validation, self.Y_testing
 
     def prepare_data(self):
         df = self.load_data()
