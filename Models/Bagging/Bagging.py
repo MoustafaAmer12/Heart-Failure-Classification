@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 from Data_Preprocessing.preprocess_data import PrepareData
-#from Decision_Tree.decision_tree import DecisionTreeClassifier
+from Models.Decision_Tree.decision_tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 
 
@@ -33,8 +33,8 @@ class Bagging:
     
     def train_models(self, X_samples, Y_samples):
         for i in range(len(X_samples)):
-            model = DecisionTreeClassifier()
-            model.fit(X_samples[i],Y_samples[i])
+            model = DecisionTreeClassifier(X_samples[i], Y_samples[i])
+            model.train()
             self.models.append(model)
 
     def ensemble_models(self, X_test):

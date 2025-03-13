@@ -1,4 +1,4 @@
-from node import Node
+from Models.Decision_Tree.node import Node
 import numpy as np
 
 class DecisionTreeClassifier:
