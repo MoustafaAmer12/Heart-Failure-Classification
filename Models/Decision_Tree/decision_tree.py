@@ -14,26 +14,29 @@ class DecisionTreeClassifier:
         
     def train(self):
         """
-        Fit the decision tree model to the provided dataset.
+        Trains the decision tree model to the provided dataset.
+        Done by constructing the decision tree.
 
         Parameters:
         -----------
-        X: numpy.ndarray
-            The input features of the dataset.
+        data: numpy.ndarray
+            The dataset.
 
-        Y: numpy.ndarray
-            The target labels of the dataset.
+        max_depth: int
+            The maximum depth of the tree.
+        
+        min_samples_split: int
+            The minimum number of samples existing in a node to stop.
         """
         self.best_split(self.root)
 
     def predict(self, test):
-        # TODO Modify on continuous
         """
         Predict the class labels for the given input features.
 
         Parameters:
         -----------
-        X: numpy.ndarray
+        test: numpy.ndarray
             The input features for which to make predictions. Should be a 2D array-like object.
 
         Returns:
@@ -46,13 +49,13 @@ class DecisionTreeClassifier:
         predictions = np.array([self.traverse_tree(sample, self.root) for sample in test])
         return predictions
 
-    def traverse_tree(self, x, node):
+    def traverse_tree(self, sample, node):
         """
         Recursively traverse the decision tree to predict the class label for a given input.
 
         Parameters:
         -----------
-        x:
+        sample:
             The input for which to make a prediction.
 
         node:
@@ -70,14 +73,14 @@ class DecisionTreeClassifier:
             return node.pred_class
 
         # Get the feature value at the split point for the current node
-        feat_value = x[node.split_on]
+        feat_value = sample[node.split_on]
 
         # Recursively traverse the decision tree using the child node matching feature value
         # 0 if feat_val < split_val, else 1
         predicted_class = (
-            self.traverse_tree(x, node.children[0]) 
+            self.traverse_tree(sample, node.children[0]) 
             if feat_value <= node.split_val 
-            else self.traverse_tree(x, node.children[1])
+            else self.traverse_tree(sample, node.children[1])
         )
 
         return predicted_class
@@ -85,6 +88,10 @@ class DecisionTreeClassifier:
     def split_on_feature(self, data, feat_index):
         """
         Split the dataset based on a specific feature index.
+
+        - Determines Splt points by iterating over all data points
+        and performing a split on each midpoint then returns the best
+        splitting threshold
 
         Parameters:
         -----------
@@ -94,20 +101,24 @@ class DecisionTreeClassifier:
         feat_index: int
             The index of the feature to perform the split.
 
-        Returns:
+        Returns:    
         -----------
         - split_nodes: dict
             A dictionary of split nodes. 
             (feature value as key, corresponding node as value)
 
+        - threshold: float
+            Threshold for performing the slit
+ 
         - weighted_entropy: float
             The weighted entropy of the split.
         """
+        # Get sorted unique values to determine the split point
         sorted_unique_values = np.sort(np.unique(data[:, feat_index]))
 
         split_nodes = {}
-        min_entropy = 2
-        split_threshold = -1
+        min_entropy = 999999
+        split_threshold = -1  # For Normalized Data no split
 
         total_instances = len(data)
         
@@ -116,12 +127,14 @@ class DecisionTreeClassifier:
             # Compute midpoint between consecutive unique values
             threshold = (sorted_unique_values[i - 1] + sorted_unique_values[i]) / 2
 
+            # Create First Data Partition (node)
             partition_1 = data[data[:, feat_index] <= threshold, :]
             node_1 = Node(partition_1)
             partition_y1 = self.get_y(partition_1)
             node_1_entropy = self.calculate_entropy(partition_y1)
             weighted_entropy += (len(partition_1) / total_instances) * node_1_entropy
 
+            # Create Second Data Partitio (node)
             partition_2 = data[data[:, feat_index] > threshold, :]
             node_2 = Node(partition_2)
             partition_y2 = self.get_y(partition_2)
@@ -165,7 +178,7 @@ class DecisionTreeClassifier:
 
         """
         # Base Case if the node meets the criteria to stop splitting
-        if self.meet_criteria(node) or (self.max_depth and depth > self.max_depth):
+        if self.meet_criteria(node, depth):
             node.is_leaf = True
             y = self.get_y(node.data)
             node.pred_class = self.get_pred_class(y)
@@ -190,15 +203,10 @@ class DecisionTreeClassifier:
         for child_node in child_nodes.values():
             self.best_split(child_node, depth + 1)
 
-    def meet_criteria(self, node:Node):
+    def meet_criteria(self, node:Node, depth):
         """
         Check if the criteria for stopping the tree expansion is met for a given node. 
         Here we only check if the entropy of the target values (y) is zero.
-        #TODO
-        Additionally, you can customize criteria based on your specific requirements.
-        For instance, you can set the maximum depth for the decision tree or incorporate other conditions for stopping the tree expansion.
-        Modify the implementation of this method according to your desired criteria.
-
         Parameters:
         -----------
         node : Node
@@ -210,9 +218,11 @@ class DecisionTreeClassifier:
             True if the criteria is met, False otherwise.
 
         """
+        if self.max_depth and depth >= self.max_depth:
+            return True
 
         y = self.get_y(node.data)
-        if self.min_samples_split and len(y) < self.min_samples_split:
+        if self.min_samples_split and len(y) <= self.min_samples_split:
             return True
         return True if self.calculate_entropy(y) == 0 else False
     

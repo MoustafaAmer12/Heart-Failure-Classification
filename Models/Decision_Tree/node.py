@@ -14,28 +14,13 @@ class Node:
         The predicted class for the node (only applicable to leaf nodes)
     is_leaf: bool, default=False
         Determine whether the node is leaf or not
-
-    Examples
-    --------
-    >>> feat_index = 0     # Ear Shape
-    >>> root = Node(data=all_data, split_on=feat_index)
-    >>> pointy_node = Node(data=pointy_data, is_leaf=True)
-    >>> floppy_node = Node(data=floppy_data, is_leaf=True)
-    >>> root.children = {"Pointy": pointy_node, "Floppy": floppy_node}
-
-    Visualization
-    -------------
-                                 root  (data = all_data, split_on = 0, is_leaf=False)
-                                /    \
-                               /      \
-                              /        \
-                             /          \
-                     pointy_node     floppy_node
-    (data=pointy_data, is_leaf=True)    (data=floppy_data, is_leaf=True)
+    split_val: float, default=None
+        Determines the value to split on
     """
 
-    def __init__(self, data=None, children:list=None, split_on=None, is_leaf=False, pred_class=None):
+    def __init__(self, data=None, children:list=None, split_on=None, is_leaf=False, pred_class=None, split_val=None):
         self.data = data
         self.children = children
         self.pred_class = pred_class
         self.is_leaf = is_leaf
+        self.split_val = split_val
