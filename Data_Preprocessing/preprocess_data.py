@@ -44,6 +44,8 @@ class PrepareData:
         # One-hot encode the categorical features
         X = pd.get_dummies(X, columns=categorical_features)
 
+        X = X.astype(int)
+
         # Split data into 80% for training and validation, and 20% for testing
         X_temp, self.X_test, Y_temp, self.Y_testing = train_test_split(
             X,Y, test_size=test_size, random_state=self.random_seed, stratify=Y
