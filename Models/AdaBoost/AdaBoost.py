@@ -86,8 +86,8 @@ if __name__ == "__main__":
     test_accuracy, test_f1 = model.evaluate(X_test, y_test)
     validation_accuracy, validation_f1 = model.evaluate(X_validation, y_validation)
 
-    # model.plot_confusion_matrix(X_test, y_test)
-    # model.plot_confusion_matrix(X_validation, y_validation)
+    model.plot_confusion_matrix(X_test, y_test)
+    model.plot_confusion_matrix(X_validation, y_validation)
     
     # Summary Output
     print(f"Test Summary:\nAccuracy: {test_accuracy:.2f}\nF1-Score: {test_f1:.2f}")
