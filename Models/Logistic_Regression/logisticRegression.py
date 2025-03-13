@@ -5,7 +5,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression as SklearnLogisticRegression
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 import matplotlib.pyplot as plt
-from prepare import PrepareData
+from Data_Preprocessing.preprocess_data import PrepareData
 
 class LogisticRegression:
     def __init__(self, random_state=42):
