@@ -66,7 +66,7 @@ class PrepareData:
         print(f"Validation set: {len(self.X_validation)} samples ({val_proportion:.1%})")
         print(f"Test set: {len(self.X_test)} samples ({test_proportion:.1%})")
 
-        return self.X_train, self.X_validation, self.X_validation, self.Y_train, self.Y_validation, self.Y_testing
+        return self.X_train, self.X_validation, self.X_test, self.Y_train, self.Y_validation, self.Y_testing
 
     def prepare_data(self):
         df = self.load_data()
