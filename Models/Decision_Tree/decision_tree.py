@@ -1,5 +1,8 @@
 from node import Node
 import numpy as np
+from preprocess_data import PrepareData
+
+DATA_PATH = "Data/heart.csv"
 class DecisionTreeClassifier:
     """
     Decision Tree Classifier Class
@@ -45,7 +48,8 @@ class DecisionTreeClassifier:
 
         """
         # Traverse the decision tree for each input and make predictions
-        predictions = np.array([self.traverse_tree(sample, self.root) for sample in test])
+        print(test.shape)
+        predictions = np.array([self.traverse_tree(sample, self.root) for _, sample in test.iterrows()])
         return predictions
 
     def traverse_tree(self, sample, node):
@@ -288,27 +292,12 @@ if __name__ == "__main__":
                                 training_percentage=70,validation_percentage=10,testing_percentage=20)
     
     X_train, X_val, X_test, y_train, y_val, y_test = prepared_data.prepare_data()
-    train_loader = get_data_loader(X_train, y_train)
-    test_loader = get_data_loader(X_test, y_test)
-    data = np.array([
-        [1 , 1, 1, 1],
-        [0 , 0, 1, 1],
-        [0 , 1, 0, 0],
-        [1 , 0, 1, 0],
-        [1 , 1, 1, 1],
-        [1 , 1, 0, 1],
-        [0 , 0, 0, 0],
-        [1 , 1, 0, 1],
-        [0 , 1, 0, 0],
-        [0 , 1, 0, 0],
-    ])
-    X = data[:, :-1]
-    Y = data[:, -1]
-    model = DecisionTreeClassifier(X, Y)
+    model = DecisionTreeClassifier(X_train, y_train)
+    print("Train")
     model.train()
-    pred = model.predict([
-        [1 , 1, 1],
-        [0 ,0, 1],
-        [0 , 1, 0]
-    ])
+    print("Eval")
+    print(X_val.shape)
+    for idx, sample in X_val.iterrows():
+        print(sample.shape)
+    pred = model.predict(X_val)
     print(pred)
