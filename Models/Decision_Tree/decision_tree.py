@@ -297,7 +297,7 @@ if __name__ == "__main__":
         [0 , 1, 0, 0],
         [0 , 1, 0, 0],
     ])
-    model = DecisionTreeClassifier(data)  
+    model = DecisionTreeClassifier(data)
     model.train()
     pred = model.predict([
         [1 , 1, 1],
