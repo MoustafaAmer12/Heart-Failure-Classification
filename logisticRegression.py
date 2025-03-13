@@ -3,8 +3,10 @@ import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression as SklearnLogisticRegression
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score, roc_curve
+from sklearn.metrics import accuracy_score, f1_score
 import matplotlib.pyplot as plt
+from prepare import PrepareData
+
 class LogisticRegression:
     def __init__(self, random_state=42):
         self.random_state = random_state
@@ -20,18 +22,10 @@ class LogisticRegression:
     def evaluate(self, X, y, dataset_name=""):
         y_pred = self.model.predict(X)
         accuracy = accuracy_score(y, y_pred)
-        
-        print(f"\n{dataset_name} Accuracy: {accuracy:.4f}")
-        print(f"\nClassification Report ({dataset_name}):")
-        print(classification_report(y, y_pred))
-        
-        results = {
-            'accuracy': accuracy,
-            'predictions': y_pred
-        }
-        
-        return results
-    
+        f1 = f1_score(y, y_pred)
+
+        print(f"Accuracy: {accuracy:.4f}")
+        print(f"F1 score: {f1:.4f}")
 
 
 # Example usage
@@ -51,10 +45,7 @@ if __name__ == "__main__":
     if X_train is not None:
         # Initialize the model
         model = LogisticRegression(random_state=42)
-        
-        # Build the pipeline
-        model.train()
-        
+                
         # Train the initial model
         print("\n--- Training Initial Model ---")
         model.train(X_train, y_train)
