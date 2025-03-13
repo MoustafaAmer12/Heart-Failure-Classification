@@ -33,7 +33,7 @@ class PrepareData:
         test_size = self.testing_percentage/100.0
         validation_size = self.validation_percentage/(100.0-self.testing_percentage)
 
-        print(f"Splitting sizes:\ntest size:{test_size}\nvalidation size:{validation_size}")
+        print(f"Splitting sizes:\ntest size:{test_size}\nvalidation size:{validation_size}")    
         #Splitting target column from features
         X = df.drop(columns = [target_column])
         Y = df[target_column]
