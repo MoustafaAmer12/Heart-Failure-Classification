@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 import numpy as np
 import matplotlib.pyplot as plt
+from Data_Preprocessing.preprocess_data import PrepareData
 
 
 class KNNClassifier:
@@ -40,11 +41,13 @@ class KNNClassifier:
 
 if __name__ == "__main__":
     random_seed = 42
-    X, y = make_classification(n_samples=500, n_features=10, random_state=random_seed)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    DataPrep = PrepareData(dataset_path='heart.csv', random_seed=random_seed
+                           ,training_percentage=70, validation_percentage=10, testing_percentage=20)
+    
+    X_train, X_validation, X_test, y_train, y_validation, y_test = DataPrep.prepare_data()
 
-    knn = KNNClassifier(k=10)
+    knn = KNNClassifier(k=6)
     knn.fit(X_train, y_train)
     accuracy, f1 = knn.evaluate(X_test, y_test)
     knn.plot_confusion_matrix(X_test, y_test)
