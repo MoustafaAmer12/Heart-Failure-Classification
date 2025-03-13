@@ -186,7 +186,7 @@ class DecisionTreeClassifier:
 
         # Initialize variables for tracking the best split
         index_feature_split = -1
-        min_entropy = 1 # TODO check for maximum entropy value possible
+        min_entropy = 1
 
         # iterate over all features, ignore (y)
         for i in range(node.data.shape[1] - 1):
