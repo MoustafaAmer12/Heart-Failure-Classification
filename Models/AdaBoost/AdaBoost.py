@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix, ConfusionMatrixDisplay
+from Data_Preprocessing.preprocess_data import PrepareData
 
 
 
@@ -21,19 +22,19 @@ class AdaBoost:
 
         for _ in range(self.n_estimators):
             model = DecisionTreeClassifier(max_depth=1)
-            model.fit(X, y)
+            model.fit(X, y, sample_weight=weights)  # Pass weights to fit
 
             predictions = model.predict(X)
 
             err = np.sum(weights * (predictions != y)) / np.sum(weights)
 
-            if err > 0.5:
-                continue
+            if err >= 0.5:
+                break 
 
             alpha = 0.5 * np.log((1 - err) / err)
 
             weights *= np.exp(-alpha * y * predictions)
-            weights /= np.sum(weights) # Normalize weights
+            weights /= np.sum(weights)  # Normalize weights
 
             self.models.append(model)
             self.alphas.append(alpha)
@@ -44,7 +45,7 @@ class AdaBoost:
         for alpha, model in zip(self.alphas, self.models):
             final_pred += alpha * model.predict(X)
 
-        return np.sign(final_pred)
+        return np.where(final_pred >= 0, 1, -1)  # Ensure valid class labels
     
 
     def evaluate(self, X, y):
@@ -67,18 +68,27 @@ class AdaBoost:
 
 
 if __name__ == "__main__":
+    random_seed = 42
 
-    # Generate synthetic dataset
-    X, y = make_classification(n_samples=500, n_features=10, random_state=42)
-    y = 2 * (y - 0.5)  # Convert to {-1, 1} labels
+    DataPrep = PrepareData(dataset_path='heart.csv', random_seed=random_seed
+                           ,training_percentage=70, validation_percentage=10, testing_percentage=20)
+    
+    X_train, X_validation, X_test, y_train, y_validation, y_test = DataPrep.prepare_data()
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    y_train = 2 * (y_train - 0.5)
+    y_test = 2 * (y_test - 0.5)
+    y_validation = 2 * (y_validation - 0.5)
 
     # Train AdaBoost model
     model = AdaBoost(n_estimators=50)
     model.fit(X_train, y_train)
-    accuracy, f1 = model.evaluate(X_test, y_test)
-    model.plot_confusion_matrix(X_test, y_test)
+
+    test_accuracy, test_f1 = model.evaluate(X_test, y_test)
+    validation_accuracy, validation_f1 = model.evaluate(X_validation, y_validation)
+
+    # model.plot_confusion_matrix(X_test, y_test)
+    # model.plot_confusion_matrix(X_validation, y_validation)
     
     # Summary Output
-    print(f"Summary:\nAccuracy: {accuracy:.2f}\nF1-Score: {f1:.2f}")
+    print(f"Test Summary:\nAccuracy: {test_accuracy:.2f}\nF1-Score: {test_f1:.2f}")
+    print(f"Validation Summary:\nAccuracy: {validation_accuracy:.2f}\nF1-Score: {validation_f1:.2f}")
