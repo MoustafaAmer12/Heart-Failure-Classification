@@ -189,7 +189,7 @@ class DecisionTreeClassifier:
         min_entropy = 1 # TODO check for maximum entropy value possible
 
         # iterate over all features, ignore (y)
-        for i in range(data.shape[1] - 1):
+        for i in range(node.data.shape[1] - 1):
             split_nodes, threshold, weighted_entropy = self.split_on_feature(node.data, i)
             if weighted_entropy < min_entropy:
                 child_nodes, split_val , min_entropy = split_nodes, threshold, weighted_entropy
