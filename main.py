@@ -1,7 +1,8 @@
-from prepare import PrepareData
+from Data_Preprocessing.preprocess_data import PrepareData
 
+DATA_PATH = "Data/heart.csv"
 if __name__ == "__main__":
-    prepared_data = PrepareData(dataset_path="heart.csv",random_seed=42,
+    prepared_data = PrepareData(dataset_path=DATA_PATH,random_seed=42,
                                 training_percentage=70,validation_percentage=10,testing_percentage=20)
     X_train, X_val, X_test, y_train, y_val, y_test = prepared_data.prepare_data()
     print(X_train.head())
