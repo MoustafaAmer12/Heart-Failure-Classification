@@ -63,7 +63,7 @@ class NNClassifier:
         plt.xlabel("Predicted")
         plt.ylabel("Actual")
         plt.title(f"{set_name} Confusion Matrix")
-        plt.show()
+        plt.show(block=True)
 
 if __name__ == "__main__":
     prepared_data = PrepareData(dataset_path=DATA_PATH, random_seed=RANDOM_SEED,
