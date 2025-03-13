@@ -24,3 +24,4 @@ class Node:
         self.pred_class = pred_class
         self.is_leaf = is_leaf
         self.split_val = split_val
+        self.split_on = split_on

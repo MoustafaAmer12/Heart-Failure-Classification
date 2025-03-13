@@ -3,7 +3,9 @@ import torch.nn as nn
 import torch.optim as optim  
 from nn import HeartFailureNN
 from data_loader import get_data_loader
+from Data_Preprocessing.preprocess_data import PrepareData
 
+DATA_PATH = "Data/heart.csv"
 class NNClassifier:
     def __init__(self, model):
         self.model = model
@@ -45,7 +47,13 @@ if __name__ == "__main__":
     neural_net = HeartFailureNN()
     model = NNClassifier(neural_net)
     
-    # train_loader = get_data_loader()
+    prepared_data = PrepareData(dataset_path=DATA_PATH,random_seed=42,
+                                training_percentage=70,validation_percentage=10,testing_percentage=20)
+    
+    X_train, X_val, X_test, y_train, y_val, y_test = prepared_data.prepare_data()
+    train_loader = get_data_loader(X_train, y_train)
+    test_loader = get_data_loader(X_test, y_test)
+    
     # test_loader = get_data_loader()
 
     print(neural_net)
