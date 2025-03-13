@@ -3,16 +3,16 @@ import numpy as np
 
 class DecisionTreeClassifier:
     """
-    Classifier Class
+    Decision Tree Classifier Class
     Constructs a generic decision tree for classification
     """
-    def __init__(self, max_depth=None, min_samples_split=None):
-        self.root = Node()
+    def __init__(self, data, max_depth=None, min_samples_split=None):
+        self.root = Node(data)
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
     
         
-    def train(self, x, y):
+    def train(self):
         """
         Fit the decision tree model to the provided dataset.
 
@@ -24,11 +24,10 @@ class DecisionTreeClassifier:
         Y: numpy.ndarray
             The target labels of the dataset.
         """
-        data = np.column_stack([X, Y])
-        self.root.data = data
         self.best_split(self.root)
 
-    def predict(self, X):
+    def predict(self, test):
+        # TODO Modify on continuous
         """
         Predict the class labels for the given input features.
 
@@ -43,9 +42,8 @@ class DecisionTreeClassifier:
             An array of predicted class labels.
 
         """
-
         # Traverse the decision tree for each input and make predictions
-        predictions = np.array([self.traverse_tree(x, self.root) for x in X])
+        predictions = np.array([self.traverse_tree(sample, self.root) for sample in test])
         return predictions
 
     def traverse_tree(self, x, node):
@@ -74,8 +72,13 @@ class DecisionTreeClassifier:
         # Get the feature value at the split point for the current node
         feat_value = x[node.split_on]
 
-        # Recursively traverse the decision tree using the child node corresponding to the feature value
-        predicted_class = self.traverse_tree(x, node.children[feat_value])
+        # Recursively traverse the decision tree using the child node matching feature value
+        # 0 if feat_val < split_val, else 1
+        predicted_class = (
+            self.traverse_tree(x, node.children[0]) 
+            if feat_value <= node.split_val 
+            else self.traverse_tree(x, node.children[1])
+        )
 
         return predicted_class
 
@@ -100,42 +103,59 @@ class DecisionTreeClassifier:
         - weighted_entropy: float
             The weighted entropy of the split.
         """
-        feature_values = data[:, feat_index]
-        unique_values = np.unique(feature_values)
+        sorted_unique_values = np.sort(np.unique(data[:, feat_index]))
 
         split_nodes = {}
-        weighted_entropy = 0
+        min_entropy = 2
+        split_threshold = -1
+
         total_instances = len(data)
         
-        #TODO Manage Continuous Features
-        
-        for unique_value in unique_values:
-            partition = data[data[:, feat_index] == unique_value, :]
-            node = Node(data=partition)
-            split_nodes[unique_value] = node
-            partition_y = self.get_y(partition)
-            node_entropy = self.calculate_entropy(partition_y)
-            weighted_entropy += (len(partition) / total_instances) * node_entropy
+        for i in range(1, len(sorted_unique_values)):
+            weighted_entropy = 0
+            # Compute midpoint between consecutive unique values
+            threshold = (sorted_unique_values[i - 1] + sorted_unique_values[i]) / 2
 
-        return split_nodes, weighted_entropy
+            partition_1 = data[data[:, feat_index] <= threshold, :]
+            node_1 = Node(partition_1)
+            partition_y1 = self.get_y(partition_1)
+            node_1_entropy = self.calculate_entropy(partition_y1)
+            weighted_entropy += (len(partition_1) / total_instances) * node_1_entropy
+
+            partition_2 = data[data[:, feat_index] > threshold, :]
+            node_2 = Node(partition_2)
+            partition_y2 = self.get_y(partition_2)
+            node_2_entropy = self.calculate_entropy(partition_y2)
+            weighted_entropy += (len(partition_2) / total_instances) * node_2_entropy
+
+            if weighted_entropy < min_entropy:
+                split_nodes[0] = node_1
+                split_nodes[1] = node_2
+                min_entropy = weighted_entropy
+                split_threshold = threshold
+
+        return split_nodes, split_threshold, min_entropy
     
-    def best_split(self, node):
+    @staticmethod
+    def cont_split_point(feature_values):
+        np.argsort(feature_values)
+
+
+    def best_split(self, node, depth=0):
         """
         Find the best split for the given node.
-        (data in node.data)
 
         Parameters:
         ----------
         node: Node
-            The node for which the best split is being determined.
+            The node that carries data for which the best split is being determined.
 
         If the node meets the criteria to stop splitting:
             - Mark the node as a leaf.
-            - Assign a predicted class for future predictions based on the target values (y).
+            - Assign a predicted class for predictions based on the target values (y).
             - return.
 
         Otherwise:
-            - Initialize variables for tracking the best split.
             - Iterate over the features to find the best split.
             - Split the data based on each feature and calculate the weighted entropy of the split.
             - Compare the current weighted entropy with the previous best entropy.
@@ -145,7 +165,7 @@ class DecisionTreeClassifier:
 
         """
         # Base Case if the node meets the criteria to stop splitting
-        if self.meet_criteria(node):
+        if self.meet_criteria(node) or (self.max_depth and depth > self.max_depth):
             node.is_leaf = True
             y = self.get_y(node.data)
             node.pred_class = self.get_pred_class(y)
@@ -157,17 +177,18 @@ class DecisionTreeClassifier:
 
         # iterate over all features, ignore (y)
         for i in range(data.shape[1] - 1):
-            split_nodes, weighted_entropy = self.split_on_feature(node.data, i)
+            split_nodes, threshold, weighted_entropy = self.split_on_feature(node.data, i)
             if weighted_entropy < min_entropy:
-                child_nodes, min_entropy = split_nodes, weighted_entropy
+                child_nodes, split_val , min_entropy = split_nodes, threshold, weighted_entropy
                 index_feature_split = i
 
         node.children = child_nodes
         node.split_on = index_feature_split
+        node.split_val = split_val
 
         # Recursively call the best_split function for each child node
         for child_node in child_nodes.values():
-            self.best_split(child_node)
+            self.best_split(child_node, depth + 1)
 
     def meet_criteria(self, node:Node):
         """
@@ -191,6 +212,8 @@ class DecisionTreeClassifier:
         """
 
         y = self.get_y(node.data)
+        if self.min_samples_split and len(y) < self.min_samples_split:
+            return True
         return True if self.calculate_entropy(y) == 0 else False
     
 
@@ -253,25 +276,22 @@ class DecisionTreeClassifier:
 
 if __name__ == "__main__":
     data = np.array([
-        ['Pointy', 'Round',     'Present', 1],
-        ['Floppy', 'Not round', 'Present', 1],
-        ['Floppy', 'Round',     'Absent',  0],
-        ['Pointy', 'Not round', 'Present', 0],
-        ['Pointy', 'Round',     'Present', 1],
-        ['Pointy', 'Round',     'Absent',  1],
-        ['Floppy', 'Not round', 'Absent',  0],
-        ['Pointy', 'Round',     'Absent',  1],
-        ['Floppy', 'Round',     'Absent',  0],
-        ['Floppy', 'Round',     'Absent',  0],
+        [1 , 1, 1, 1],
+        [0 , 0, 1, 1],
+        [0 , 1, 0, 0],
+        [1 , 0, 1, 0],
+        [1 , 1, 1, 1],
+        [1 , 1, 0, 1],
+        [0 , 0, 0, 0],
+        [1 , 1, 0, 1],
+        [0 , 1, 0, 0],
+        [0 , 1, 0, 0],
     ])
-
-    X, Y = data[:, :-1], data[:, -1]
-    Y = Y.reshape((-1, 1))  
-    model = DecisionTreeClassifier()    
-    model.train(X, Y)
+    model = DecisionTreeClassifier(data)  
+    model.train()
     pred = model.predict([
-        ['Pointy', 'Round',     'Present'],
-        ['Floppy', 'Not round', 'Present'],
-        ['Floppy', 'Round',     'Absent']
+        [1 , 1, 1],
+        [0 ,0, 1],
+        [0 , 1, 0]
     ])
     print(pred)
